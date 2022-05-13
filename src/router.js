@@ -7,7 +7,7 @@ import CheepMessages from './pages/CheepMessages.vue'
 import CheepProfile from './pages/CheepProfile.vue'
 
 const routes = [
-    { path: '/', component: CheepHome },
+    { path: '/', component: CheepHome, alias: '/home' },
     { path: '/explore', component: CheepExplore },
     { path: '/notifications', component: CheepNotifications },
     { path: '/messages', component: CheepMessages },
