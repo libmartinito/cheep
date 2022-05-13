@@ -1,6 +1,8 @@
 <template>
   <the-sidebar></the-sidebar>
-  <router-view></router-view>
+  <section class="feed">
+    <router-view></router-view>
+  </section>
 </template>
 
 <style>
@@ -17,12 +19,18 @@
   --neutral-700: #404040;
   --neutral-800: #262626;
   --neutral-900: #171717;
-  font-size: 18px;
+  font-size: 24px;
   box-sizing: inherit;
 }
 
 #app {
   background-color: var(--neutral-50);
   color: var(--neutral-700);
+  display: flex;
+  justify-content: center;
+}
+
+.feed {
+  width: 600px;
 }
 </style>

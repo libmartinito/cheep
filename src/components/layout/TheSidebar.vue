@@ -25,7 +25,7 @@
                 </base-link>
             </ul>
         </nav>
-        <base-button>Cheep</base-button>
+        <base-button mode="primary">Cheep</base-button>
     </section>
 </template>
 
@@ -76,7 +76,7 @@
         methods: {
             updateSelected(selected) {
                 this.selected = selected
-                
+
                 this.homeIsActive = false;
                 this.exploreIsActive = false;
                 this.notifIsActive = false;
