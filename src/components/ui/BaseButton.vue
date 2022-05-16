@@ -14,12 +14,14 @@ export default {
     button {
         border-radius: 2rem;
         font: inherit;
-        background-color: var(--neutral-700);
+        border: none;
+        background-color: var(--neutral-600);
         color: var(--neutral-50);
         cursor: pointer;
+        margin: 1rem 0rem;
     }
     button:hover {
-        background-color: var(--neutral-900);
+        background-color: var(--neutral-800);
     }
     .primary {
         padding: 0.5rem 2.5rem;

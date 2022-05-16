@@ -11,18 +11,18 @@
             </div>
         </div>
     </section>
-    <section class="post">
-        <div class="post__interaction"></div>
-        <div class="post__icon"></div>
-        <div class="post__content">
-            <div class="post__header"></div>
-            <div class="post__body"></div>
-            <div class="post__actions"></div>            
-        </div>
-        <div class="post__options"></div>
-    </section>
+    <cheep-post></cheep-post>
 </template>
 
+<script>
+    import CheepPost from '../components/home/CheepPost.vue'
+
+    export default {
+        components: {
+            CheepPost,
+        }
+    }
+</script>
 <style scoped>
 .header {
     padding: 0.5rem;

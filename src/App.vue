@@ -6,6 +6,7 @@
 </template>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
 * {
   margin: 0;
   padding: 0;
@@ -16,16 +17,18 @@
   --neutral-50: #fafafa;
   --neutral-100: #f5f5f5;
   --neutral-200: #e5e5e5;
+  --neutral-600: #525252;
   --neutral-700: #404040;
   --neutral-800: #262626;
   --neutral-900: #171717;
   font-size: 24px;
+  font-family: 'Inter', sans-serif;
   box-sizing: inherit;
 }
 
 #app {
   background-color: var(--neutral-50);
-  color: var(--neutral-700);
+  color: var(--neutral-800);
   display: flex;
   justify-content: center;
 }

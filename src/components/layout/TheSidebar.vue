@@ -1,6 +1,6 @@
 <template>
     <section class="sidebar">
-        <img src="../../assets/logo.svg"/>
+        <img src="../../assets/logo.svg" class="logo">
         <nav class="main-nav">
             <ul class="main-nav__list">
                 <base-link @click="updateSelected('home')">
@@ -101,9 +101,24 @@
 </script>
 
 <style scoped>
+    .logo {
+        width: 1.5rem;
+        height: 1.5rem;
+        margin: 1rem;
+    }
     .icon {
-        width: 1rem;
+        width: 1.2rem;
+        height: 1.2rem;
         background-size: cover;
+    }
+    .main-nav__list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: flex-start;
+    }
+    .sidebar {
+        width: 10rem;
     }
     .active {
         font-weight: 700;
