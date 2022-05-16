@@ -3,23 +3,23 @@
         <img src="../../assets/logo.svg" class="logo">
         <nav class="main-nav">
             <ul class="main-nav__list">
-                <base-link @click="updateSelected('home')">
+                <base-link @click="updateSelected('home')" mode="main-nav__item">
                     <div :class="[home, 'icon']"></div>
                     <div :class="{active: homeIsActive}">Home</div>
                 </base-link>
-                <base-link @click="updateSelected('explore')">                    
+                <base-link @click="updateSelected('explore')" mode="main-nav__item">                    
                     <div :class="[explore, 'icon']"></div>
                     <div :class="{active: exploreIsActive}">Explore</div>                    
                 </base-link>
-                <base-link @click="updateSelected('notifications')">                    
+                <base-link @click="updateSelected('notifications')" mode="main-nav__item">                    
                     <div :class="[notifications, 'icon']"></div>
                     <div :class="{active: notifIsActive}">Notifications</div>
                 </base-link>
-                <base-link @click="updateSelected('messages')">                                      
+                <base-link @click="updateSelected('messages')" mode="main-nav__item">                                      
                     <div :class="[messages, 'icon']"></div>
                     <div :class="{active: messageIsActive}">Messages</div>
                 </base-link>
-                <base-link @click="updateSelected('profile')">              
+                <base-link @click="updateSelected('profile')" mode="main-nav__item">              
                     <div :class="[profile, 'icon']"></div>
                     <div :class="{active: profileIsActive}">Profile</div>
                 </base-link>
@@ -77,11 +77,11 @@
             updateSelected(selected) {
                 this.selected = selected
 
-                this.homeIsActive = false;
-                this.exploreIsActive = false;
-                this.notifIsActive = false;
-                this.messageIsActive = false;
-                this.profileIsActive = false;
+                this.homeIsActive = false
+                this.exploreIsActive = false
+                this.notifIsActive = false
+                this.messageIsActive = false
+                this.profileIsActive = false
 
                 if (selected === "home") {
                     this.homeIsActive = !this.homeIsActive
