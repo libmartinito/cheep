@@ -10,7 +10,7 @@
                     <div class="post__age">10h</div>
                 </div>
                 <div class="post__body">
-                    I hope some of this context is helpful for the community to know where we're coming from and know that we will be here to balance the economy.
+                    {{ content }}
                 </div>
                 <div class="post__actions">
                     <div class="post__reply">
@@ -31,6 +31,12 @@
         </div>
     </section>
 </template>
+
+<script>
+    export default {
+        props: ["content"]
+    }
+</script>
 
 <style soped>
 .post{

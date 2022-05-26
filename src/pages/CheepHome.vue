@@ -5,13 +5,13 @@
     <section class="input">
         <div class="input__icon"></div>
         <div class="input__main">
-            <textarea id="input__text" placeholder="What's happening?"></textarea>
+            <textarea id="input__text" placeholder="What's happening?" v-model="postContent"></textarea>
             <div class="input__actions">
                 <base-button mode="secondary">Cheep</base-button>
             </div>
         </div>
     </section>
-    <cheep-post></cheep-post>
+    <cheep-post v-for="post in posts" :key="post.id" :content="post.content"></cheep-post>
 </template>
 
 <script>
@@ -20,6 +20,48 @@
     export default {
         components: {
             CheepPost,
+        },
+        data() {
+            return {
+                posts: [],
+                postContent: ""
+            }
+        },
+        methods: {
+            async getData() {
+                try {
+                    let response = await fetch("http://localhost:3333/api/cheep", {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    this.posts = await response.json()
+                    console.log(this.posts)
+                } catch(error) {
+                    console.log(error)
+                }
+            },
+            async postCheep() {
+                try {
+                    let response = await fetch("http://localhost:3333/api/cheep", {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                            'Authentication': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    response = await response.json()
+                    this.posts.concat(response)
+                } catch(error) {
+                    console.log(error)
+                }
+            }
+        },
+        created() {
+            this.getData()
         }
     }
 </script>
