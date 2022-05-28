@@ -6,7 +6,12 @@ const store = createStore({
             userId: null,
             token: null,
             tokenExpiration: null,
-            isSignedIn: false
+            isSignedIn: false,
+
+            username: "",
+            handle: "",
+            icon: "",
+            bio: "",
         }
     },
     mutations: {
@@ -14,6 +19,11 @@ const store = createStore({
             state.userId = payload.userId
             state.token = payload.token
             state.tokenExpiration = payload.tokenExpiration
+
+            state.username = payload.username
+            state.handle = payload.handle
+            state.icon = payload.icon
+            state.bio = payload.bio
         },
         setSignInStatus(state, payload) {
             state.isSignedIn = payload.status
@@ -36,8 +46,25 @@ const store = createStore({
                 context.commit('setUser', {
                     userId: response.user_id,
                     token: response.token,
-                    tokenExpiration: response.tokenExpiration
+                    tokenExpiration: response.expires_at,
+
+                    username: response.username,
+                    handle: response.handle,
+                    icon: response.icon,
+                    bio: response.bio
                 })
+                context.commit('setSignInStatus', {
+                    status: true,
+                })
+                // console.log('signin action')
+                localStorage.setItem('userid', response.user_id)
+                localStorage.setItem('token', response.token)
+                localStorage.setItem('tokenExpiration', response.expires_at)
+                localStorage.setItem('isSignedIn', true)
+                localStorage.setItem('username', response.username)
+                localStorage.setItem('handle', response.handle)
+                localStorage.setItem('icon', response.icon)
+                localStorage.setItem('bio', response.bio)
             } catch(error) {
                 console.log(error)
             }
@@ -61,35 +88,57 @@ const store = createStore({
                 context.commit('setUser', {
                     userId: response.user_id,
                     token: response.token,
-                    tokenExpiration: response.expires_at
+                    tokenExpiration: response.expires_at,
+
+                    username: response.username,
+                    handle: response.handle,
+                    icon: response.icon,
+                    bio: response.bio,
                 })
             } catch(error) {
                 console.log(error)
             }
         },
         loadFromLocalStorage(context) {
+            console.log('what')
             const userId = localStorage.getItem('userid')
             const token = localStorage.getItem('token')
             const tokenExpiration = localStorage.getItem('tokenExpiration')
             const isSignedIn = localStorage.getItem('isSignedIn')
 
+            const username = localStorage.getItem('username')
+            const handle = localStorage.getItem('handle')
+            const icon = localStorage.getItem('icon')
+            const bio = localStorage.getItem('bio')
+            
             if(userId && token && tokenExpiration) {
                 context.commit('setUser', {
                     userId: userId,
                     token: token,
-                    tokenExpiration: tokenExpiration
+                    tokenExpiration: tokenExpiration,
+
+                    username: username,
+                    handle: handle,
+                    icon: icon,
+                    bio: bio
                 })
                 context.commit('setSignInStatus', {
                     status: isSignedIn
                 })
             }            
         },
-        signOut(context) {
+        signout(context) {
             localStorage.clear()
             context.commit('setUser', {
                 userId: null,
                 token: null,
-                tokenExpiration: null
+                tokenExpiration: null,
+                isSignedIn: false,
+                username: "",
+                handle: "",
+                icon: "",
+                bio: ""
+                
             })
             context.commit('setSignInStatus', {
                 status: false
@@ -97,8 +146,8 @@ const store = createStore({
         }
     },
     getters: {
-        userid(state) {
-            return state.userid
+        userId(state) {
+            return state.userId
         },
         token(state) {
             return state.token
@@ -108,7 +157,19 @@ const store = createStore({
         },
         isSignedIn(state) {
             return state.isSignedIn
-        }
+        },
+        username(state) {
+            return state.username
+        },
+        handle(state) {
+            return state.handle
+        },
+        icon(state) {
+            return state.icon
+        },
+        bio(state) {
+            return state.bio
+        },
     }
 })
 

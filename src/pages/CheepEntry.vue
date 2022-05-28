@@ -81,12 +81,6 @@
                     console.log(error)
                 }
             },
-            updateLocalStorage() {
-                localStorage.setItem('userid', this.$store.getters.userid)
-                localStorage.setItem('token', this.$store.getters.token)
-                localStorage.setItem('tokenExpiration', this.$store.getters.tokenExpiration)
-                localStorage.setItem('isSignedIn', this.$store.getters.isSignedIn)
-            },
             async signUp() {
                 await this.updateBio()
                 this.$store.dispatch('signup', {
@@ -98,6 +92,10 @@
                     bio: this.uwuBio
 
                 })
+                this.$store.commit('setSignInStatus', {
+                    status: true
+                })
+                
 
                 this.username = ""
                 this.handle = ""
@@ -107,31 +105,34 @@
                 this.uwuBio = ""
 
                 this.updateSignUpModalDisplay()
-                this.$store.commit('setSignInStatus', {
-                    status: true
-                })
-
-                this.updateLocalStorage()
                 
                 this.$router.push('/home')
             },
             async signIn() {
-                this.$store.dispatch('signin', {
+                await this.$store.dispatch('signin', {
                     email: this.email,
                     password: this.password
                 })
+                // this.$store.commit('setSignInStatus', {
+                //     status: true
+                // })
 
                 this.email = "",
                 this.password = ""
 
                 this.updateSignInModalDisplay()
-                this.$store.commit('setSignInStatus', {
-                    status: true
-                })
+                // console.log('signin entry')
 
-                this.updateLocalStorage()
+                // localStorage.setItem('userid', this.$store.getters.userId)
+                // localStorage.setItem('token', this.$store.getters.token)
+                // localStorage.setItem('tokenExpiration', this.$store.getters.tokenExpiration)
+                // localStorage.setItem('isSignedIn', this.$store.getters.isSignedIn)
+                // localStorage.setItem('username', this.$store.getters.username)
+                // localStorage.setItem('handle', this.$store.getters.handle)
+                // localStorage.setItem('icon', this.$store.getters.icon)
+                // localStorage.setItem('bio', this.$store.getters.bio)
 
-                this.$router.push('/home')
+                this.$router.replace('/home')
             }
         }
     }

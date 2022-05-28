@@ -7,11 +7,19 @@
         <div class="input__main">
             <textarea id="input__text" placeholder="What's happening?" v-model="postContent"></textarea>
             <div class="input__actions">
-                <base-button mode="secondary">Cheep</base-button>
+                <base-button @click="postCheep" mode="secondary">Cheep</base-button>
             </div>
         </div>
     </section>
-    <cheep-post v-for="post in posts" :key="post.id" :content="post.content"></cheep-post>
+    <cheep-post v-for="post in posts" 
+        :key="post.id" 
+        :userId="post.user_id"
+        :cheepId="post.id"
+        :content="post.content"
+        :username="post.username"
+        :handle="post.handle"
+        :icon="post.icon"
+    ></cheep-post>
 </template>
 
 <script>
@@ -30,14 +38,31 @@
         methods: {
             async getData() {
                 try {
+                    this.posts = []
+                    console.log(this.posts)
                     let response = await fetch("http://localhost:3333/api/cheep", {
                         method: 'GET',
                         mode: 'cors',
                         headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
                             'Content-Type': 'application/json'
                         },
                     })
-                    this.posts = await response.json()
+                    const allPosts = await response.json()
+                    console.log(allPosts)
+                    // console.log(this.$store.getters.userId)
+                    // this.posts = []
+                    const currentUserId = parseInt(this.$store.getters.userId)
+                    
+                    this.posts = allPosts.filter(post => post.user_id !== currentUserId)
+                    // allPosts.forEach(post => {
+                    //     if (post.user_id === this.$store.getters.userId) {
+                    //         // console.log('post not pushed')
+                    //         return
+                    //         // this.posts.push(post)
+                    //     }
+                    //     this.posts.push(post)
+                    // })
                     console.log(this.posts)
                 } catch(error) {
                     console.log(error)
@@ -49,9 +74,12 @@
                         method: 'POST',
                         mode: 'cors',
                         headers: {
-                            'Authentication': 'Bearer ' + this.$store.getters.token,
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
                             'Content-Type': 'application/json'
                         },
+                        body: JSON.stringify({
+                            content: this.postContent
+                        })
                     })
                     response = await response.json()
                     this.posts.concat(response)
@@ -62,7 +90,7 @@
         },
         created() {
             this.getData()
-        }
+        },
     }
 </script>
 <style scoped>

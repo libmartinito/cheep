@@ -100,7 +100,7 @@
                 this.$router.push('/' + selected)
             },
             signOut() {
-                this.$store.dispatch('signOut')
+                this.$store.dispatch('signout')
                 this.$router.push('/')
             }
         }

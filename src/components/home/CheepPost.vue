@@ -2,11 +2,12 @@
     <section class="post">        
         <div class="post__interaction">user liked</div>
         <div class="post__main">
-            <div class="post__icon"></div>
+            <!-- <div class="post__icon"></div> -->
+            <img :src="icon" class="post__icon"/>
             <div class="post__content">
                 <div class="post__header">
-                    <div class="post__username">User</div>
-                    <div class="post__handle">@username</div>
+                    <div class="post__username">{{ username }}</div>
+                    <div class="post__handle">{{ handle }}</div>
                     <div class="post__age">10h</div>
                 </div>
                 <div class="post__body">
@@ -17,13 +18,13 @@
                         <div class="post__reply-icon"></div>
                         <div class="post__reply-counter">7</div>
                     </div>
-                    <div class="post__recheep">
+                    <div @click="updateIsRecheepActive" :class="[{post__actionsActive: isRecheepActive}, 'post__recheep']">
                         <div class="post__recheep-icon"></div>
                         <div class="post__recheep-counter">8</div>
                     </div>
-                    <div class="post__react">
+                    <div @click="like" :class="[{post__actionsActive: isReactActive}, 'post__react']">
                         <div class="post__react-icon"></div>
-                        <div class="post__react-counter">9</div>
+                        <div class="post__react-counter">{{ likeCount }}</div>
                     </div>
                 </div>  
             </div>                                  
@@ -34,7 +35,94 @@
 
 <script>
     export default {
-        props: ["content"]
+        props: ["cheepId", "icon", "username", "handle", "content"],
+        data() {
+            return {
+                likeId: null,
+                isReactActive: false,
+                isRecheepActive: false,
+                likeCount: null
+            }
+        },
+        methods: {
+            updateIsReactActive() {
+                this.isReactActive = !this.isReactActive
+            },
+            updateIsRecheepActive() {
+                this.isRecheepActive = !this.isRecheepActive
+            },
+            async like() {
+                if (!this.isReactActive) {
+                    this.updateIsReactActive()
+                    try {
+                        let response = await fetch("http://localhost:3333/api/like", {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: {
+                                'Authorization': 'Bearer ' + this.$store.getters.token,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userid: this.$store.getters.userId,
+                                cheepid: this.cheepId
+                            })
+                        })
+                        response = await response.json()
+                        this.likeId = response.id
+                    } catch(error) {
+                        console.log(error)
+                    }                
+                } else {
+                    this.updateIsReactActive()
+                    try {
+                        await fetch("http://localhost:3333/api/like/" + this.likeId, {
+                            method: 'DELETE',
+                            mode: 'cors',
+                            headers: {
+                                'Authorization': 'Bearer ' + this.$store.getters.token,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    } catch(error) {
+                        console.log(error)
+                    }
+                }     
+                this.updateLikeCount()           
+            },
+            async updateIfPostIsLiked() {
+                let response = await fetch("http://localhost:3333/api/like", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                response.forEach(likeInstance => {
+                    if (likeInstance.cheep_id === this.cheepId) {
+                        this.updateIsReactActive()
+                        this.likeId = likeInstance.id
+                    }
+                })
+            },
+            async updateLikeCount() {
+                let response = await fetch("http://localhost:3333/api/like/" + this.cheepId, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                this.likeCount = response[0].total            
+            }
+        },
+        created() {
+            this.updateIfPostIsLiked()
+            this.updateLikeCount()
+        }
     }
 </script>
 
@@ -42,6 +130,10 @@
 .post{
     padding: 1rem 0rem;
     border-bottom: 1px solid var(--neutral-200);
+    cursor: pointer;
+}
+.post:hover {
+    background-color: var(--neutral-100);
 }
 .post__interaction {
     margin-left: 4rem;
@@ -57,16 +149,13 @@
     display: flex;
 }
 .post__icon {
-    background-image: url('../../assets/icon2.svg');
+    /* background-image: url('../../assets/icon2.svg'); */
     background-size: contain;
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
     border: 2px solid var(--neutral-600);
     cursor: pointer;
-}
-.post__icon:hover {
-    opacity: 0.8;
 }
 .post__content {
     width: calc(100% - 3rem - 1rem);
@@ -93,6 +182,10 @@
 .post__actions {
     gap: 6rem;
     margin: 0.5rem 0rem;
+}
+.post__actionsActive {
+    background-color: var(--neutral-300);
+    border-radius: 5px;
 }
 .post__reply,
 .post__recheep,

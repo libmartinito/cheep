@@ -1,27 +1,49 @@
 <template>
-  <cheep-entry v-if="!isSignedIn"></cheep-entry>
-  <div class="feed-wrapper" v-else>
-    <the-sidebar></the-sidebar>
-    <section class="feed">
+  <!-- <cheep-entry v-if="isSignedIn"></cheep-entry> -->
+  <div class="feed-wrapper">
+    <the-sidebar v-if="isSignedIn"></the-sidebar>
+    <section :class="{feed: isSignedIn}">
       <router-view></router-view>
     </section>
   </div>
 </template>
 
 <script>
-  import CheepEntry from './pages/CheepEntry.vue'
+// import CheepEntry from './pages/CheepEntry.vue'
 
   export default {
-    components: {
-      CheepEntry
-    },
+    // components: {
+    //   CheepEntry
+    // },
     computed: {
       isSignedIn() {
         return this.$store.getters.isSignedIn
       }
     },
-    beforeCreate() {
-      this.$store.dispatch('loadFromLocalStorage')
+    beforeCreate() {  
+      const userId = localStorage.getItem('userid')
+      const token = localStorage.getItem('token')
+      const tokenExpiration = localStorage.getItem('tokenExpiration')
+      const isSignedIn = localStorage.getItem('isSignedIn')
+      const username = localStorage.getItem('username')
+      const handle = localStorage.getItem('handle')
+      const icon = localStorage.getItem('icon')
+      const bio = localStorage.getItem('bio')
+
+      if (userId && token && tokenExpiration) {
+        this.$store.commit('setUser', {
+          userId: userId,
+          token: token,
+          tokenExpiration: tokenExpiration,
+          username: username,
+          handle: handle,
+          icon: icon,
+          bio: bio
+        })
+        this.$store.commit('setSignInStatus', {
+          status: isSignedIn
+        })
+      }
     }
   }
 </script>

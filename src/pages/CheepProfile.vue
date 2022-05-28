@@ -4,14 +4,13 @@
     </header>
     <section class="profile">
         <div class="profile__wrapper">
-            <div class="profile__pic"></div>
+            <!-- <div class="profile__pic"></div> -->
+            <img :src="icon" class="profile__pic"/>
             <base-button mode="edit">Edit Profile</base-button>    
         </div>
-        <div class="profile__username">User</div>
-        <div class="profile__handle">@username</div>
-        <div class="profile__bio">
-            "He who has a why t-to wive fow c-can beaw OwO any (・`ω´・) how."
-        </div>
+        <div class="profile__username">{{ username }}</div>
+        <div class="profile__handle">{{ handle }}</div>
+        <div class="profile__bio">{{ bio }}</div>
         <div class="profile__age">Joined May 2022</div>
         <div class="profile__follow-info">
             <div class="profile__following">10 following</div>
@@ -25,23 +24,52 @@
             <base-link mode="secondary-nav__item" :class="{active: likesIsActive}" @click="updateSelected('likes')">Likes</base-link>
         </ul>
     </nav>
-    <section class="profile__cheeps" v-if="cheepsIsActive">Profile Cheeps</section>
+    <div v-if="cheepsIsActive">
+        <cheep-post v-for="post in userPosts" 
+            :key="post.id" 
+            :cheepId="post.id"
+            :content="post.content" 
+            :username="username"
+            :handle="handle"
+            :icon="icon"
+        ></cheep-post>
+    </div>
     <section class="profile__replies" v-if="repliesIsActive">Profile Replies</section>
-    <section class="profile__likes" v-if="likesIsActive">Profile Likes</section>
+    <div v-if="likesIsActive">
+        <cheep-post v-for="post in likedPosts"
+            :key="post.id"
+            :cheepId="post.id"
+            :content="post.content"
+            :username="post.username"
+            :handle="post.handle"
+            :icon="post.icon"
+        ></cheep-post>
+    </div>
 </template>
 
 <script>
+    import CheepPost from '../components/home/CheepPost.vue'
     export default {
+        components: {
+            CheepPost
+        },
         data() {
             return {
                 selected: "",
                 cheepsIsActive: false,
                 repliesIsActive: false,
                 likesIsActive: false,
+                userPosts: [],
+                username: this.$store.getters.username,
+                handle: this.$store.getters.handle,
+                icon: this.$store.getters.icon,
+                bio: this.$store.getters.bio,
+                likedPostIds: [],
+                likedPosts: []
             }
         },
         methods: {
-            updateSelected(selected) {
+            async updateSelected(selected) {
                 this.selected = selected
 
                 this.cheepsIsActive = false
@@ -55,7 +83,63 @@
                 } else if (selected === "likes") {
                     this.likesIsActive = !this.likesIsActive
                 }
+                await this.getUserPosts()
+                await this.getLikedPosts()
+            },
+            async getUserPosts() {
+                try {
+                    const url = "http://localhost:3333/api/cheep/all/" + this.$store.getters.userId
+                    let response = await fetch(url, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    response = await response.json()
+                    this.userPosts = response
+                } catch(error) {
+                    console.log(error)
+                }
+            },
+            async getLikedPostIds(){
+                let response = await fetch("http://localhost:3333/api/like", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                response.forEach(likeInstance => {
+                    this.likedPostIds.push(likeInstance.cheep_id)
+                })
+            },
+            async getLikedPosts() {
+                this.likedPostIds = []
+                this.likedPosts = [] 
+                await this.getLikedPostIds()               
+                let response = await fetch("http://localhost:3333/api/cheep/", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                response.forEach(post => {
+                    if (this.likedPostIds.includes(post.id)) {
+                        this.likedPosts.push(post)
+                    }
+                })
             }
+        },
+        created() {
+            this.getUserPosts()
+            this.getLikedPosts()
         }
     }
 </script>
@@ -68,7 +152,7 @@
     padding: 0.8rem 0rem;
 }
 .profile__pic {
-    background-image: url("../assets/icon.svg");
+    /* background-image: url("../assets/icon.svg"); */
     width: 7rem;
     height: 7rem;
     border: 2px solid var(--neutral-600);

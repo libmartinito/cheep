@@ -23,12 +23,16 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to) => {
+// store.dispatch('loadFromLocalStorage')
+router.beforeEach(async (to) => {
+    // store.dispatch('loadFromLocalStorage')
     const isSignedIn = store.getters.isSignedIn
     if (!isSignedIn && to.name !== 'entry') {
+        console.log('route1')
         return { name: 'entry'}
-    } 
+    }
     if (isSignedIn && to.name === 'entry') {
+        console.log('route2')
         return { name: 'home'}
     }
 })
