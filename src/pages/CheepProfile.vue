@@ -34,7 +34,16 @@
             :icon="icon"
         ></cheep-post>
     </div>
-    <section class="profile__replies" v-if="repliesIsActive">Profile Replies</section>
+    <div v-if="repliesIsActive">
+        <cheep-post v-for="post in recheepedPosts"
+            :key="post.id" 
+            :cheepId="post.id"
+            :content="post.content" 
+            :username="post.username"
+            :handle="post.handle"
+            :icon="post.icon"
+        ></cheep-post>
+    </div>
     <div v-if="likesIsActive">
         <cheep-post v-for="post in likedPosts"
             :key="post.id"
@@ -65,7 +74,9 @@
                 icon: this.$store.getters.icon,
                 bio: this.$store.getters.bio,
                 likedPostIds: [],
-                likedPosts: []
+                likedPosts: [],
+                recheepedPostIds: [],
+                recheepedPosts: []
             }
         },
         methods: {
@@ -85,6 +96,7 @@
                 }
                 await this.getUserPosts()
                 await this.getLikedPosts()
+                await this.getRecheepedPosts()
             },
             async getUserPosts() {
                 try {
@@ -133,6 +145,39 @@
                 response.forEach(post => {
                     if (this.likedPostIds.includes(post.id)) {
                         this.likedPosts.push(post)
+                    }
+                })
+            },
+            async getRecheepedPostIds() {
+                let response = await fetch("http://localhost:3333/api/recheep", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                response.forEach(recheepInstance => {
+                    this.recheepedPostIds.push(recheepInstance.cheep_id)
+                })
+            },
+            async getRecheepedPosts() {
+                this.recheepedPostIds = []
+                this.recheepedPosts = []
+                await this.getRecheepedPostIds()
+                let response = await fetch("http://localhost:3333/api/cheep", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                response.forEach(post => {
+                    if (this.recheepedPostIds.includes(post.id)) {
+                        this.recheepedPosts.push(post)
                     }
                 })
             }

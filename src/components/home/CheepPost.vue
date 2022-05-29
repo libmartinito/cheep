@@ -18,9 +18,9 @@
                         <div class="post__reply-icon"></div>
                         <div class="post__reply-counter">7</div>
                     </div>
-                    <div @click="updateIsRecheepActive" :class="[{post__actionsActive: isRecheepActive}, 'post__recheep']">
+                    <div @click="recheep" :class="[{post__actionsActive: isRecheepActive}, 'post__recheep']">
                         <div class="post__recheep-icon"></div>
-                        <div class="post__recheep-counter">8</div>
+                        <div class="post__recheep-counter">{{ recheepCount }}</div>
                     </div>
                     <div @click="like" :class="[{post__actionsActive: isReactActive}, 'post__react']">
                         <div class="post__react-icon"></div>
@@ -38,10 +38,12 @@
         props: ["cheepId", "icon", "username", "handle", "content"],
         data() {
             return {
-                likeId: null,
                 isReactActive: false,
                 isRecheepActive: false,
-                likeCount: null
+                likeId: null,
+                likeCount: null,
+                recheepId: null,
+                recheepCount: null
             }
         },
         methods: {
@@ -89,6 +91,44 @@
                 }     
                 this.updateLikeCount()           
             },
+            async recheep() {
+                if (!this.isRecheepActive) {
+                    this.updateIsRecheepActive()
+                    try {
+                        let response = await fetch("http://localhost:3333/api/recheep", {
+                            method: 'POST',
+                            mode: 'cors',
+                            headers: {
+                                'Authorization': 'Bearer ' + this.$store.getters.token,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userid: this.$store.getters.userId,
+                                cheepid: this.cheepId
+                            })
+                        })
+                        response = await response.json()
+                        this.recheepId = response.id
+                    } catch(error) {
+                        console.log(error)
+                    } 
+                } else {
+                    this.updateIsRecheepActive()
+                    try {
+                        await fetch("http://localhost:3333/api/recheep/" + this.recheepId, {
+                            method: 'DELETE',
+                            mode: 'cors',
+                            headers: {
+                                'Authorization': 'Bearer ' + this.$store.getters.token,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    } catch(error) {
+                        console.log(error)
+                    }
+                }
+                this.updateRecheepCount()
+            },
             async updateIfPostIsLiked() {
                 let response = await fetch("http://localhost:3333/api/like", {
                     method: 'GET',
@@ -117,11 +157,42 @@
                 })
                 response = await response.json()
                 this.likeCount = response[0].total            
+            },
+            async updateIfPostIsRecheeped() {
+                let response = await fetch("http://localhost:3333/api/recheep", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                response.forEach(recheepInstance => {
+                    if (recheepInstance.cheep_id === this.cheepId) {
+                        this.updateIsRecheepActive()
+                        this.recheepId = recheepInstance.id
+                    }
+                })
+            },
+            async updateRecheepCount() {
+                let response = await fetch("http://localhost:3333/api/recheep/" + this.cheepId, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                this.recheepCount = response[0].total
             }
         },
         created() {
             this.updateIfPostIsLiked()
             this.updateLikeCount()
+            this.updateIfPostIsRecheeped()
+            this.updateRecheepCount()
         }
     }
 </script>
