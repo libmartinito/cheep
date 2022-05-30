@@ -7,7 +7,7 @@ import CheepNotifications from './pages/CheepNotifications.vue'
 import CheepMessages from './pages/CheepMessages.vue'
 import CheepProfile from './pages/CheepProfile.vue'
 
-import store from './store'
+// import store from './store'
 
 const routes = [
     { path: '/', name: 'entry', component: CheepEntry },
@@ -26,7 +26,7 @@ const router = createRouter({
 // store.dispatch('loadFromLocalStorage')
 router.beforeEach(async (to) => {
     // store.dispatch('loadFromLocalStorage')
-    const isSignedIn = store.getters.isSignedIn
+    const isSignedIn = localStorage.getItem('isSignedIn')
     if (!isSignedIn && to.name !== 'entry') {
         console.log('route1')
         return { name: 'entry'}

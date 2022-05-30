@@ -20,7 +20,7 @@
     <nav class="secondary-nav">
         <ul class="secondary-nav__list">
             <base-link mode="secondary-nav__item" :class="{active: cheepsIsActive}" @click="updateSelected('cheeps')">Cheep</base-link>
-            <base-link mode="secondary-nav__item" :class="{active: repliesIsActive}" @click="updateSelected('replies')">Cheeps & replies</base-link>
+            <base-link mode="secondary-nav__item" :class="{active: repliesIsActive}" @click="updateSelected('replies')">Recheeps & replies</base-link>
             <base-link mode="secondary-nav__item" :class="{active: likesIsActive}" @click="updateSelected('likes')">Likes</base-link>
         </ul>
     </nav>
@@ -35,13 +35,15 @@
         ></cheep-post>
     </div>
     <div v-if="repliesIsActive">
-        <cheep-post v-for="post in recheepedPosts"
+        <cheep-post v-for="post in recheepedAndReplyPosts"
             :key="post.id" 
             :cheepId="post.id"
             :content="post.content" 
             :username="post.username"
             :handle="post.handle"
             :icon="post.icon"
+            :interaction = "post.interaction"
+            :interactionUsername = "post.interactionUsername"
         ></cheep-post>
     </div>
     <div v-if="likesIsActive">
@@ -76,7 +78,11 @@
                 likedPostIds: [],
                 likedPosts: [],
                 recheepedPostIds: [],
-                recheepedPosts: []
+                recheepedPosts: [],
+                replyPostIds: [],
+                replyPosts: [],
+                replyInfo: [],
+                recheepedAndReplyPosts: []
             }
         },
         methods: {
@@ -96,7 +102,7 @@
                 }
                 await this.getUserPosts()
                 await this.getLikedPosts()
-                await this.getRecheepedPosts()
+                await this.getRecheepedAndReplyPosts()
             },
             async getUserPosts() {
                 try {
@@ -177,10 +183,95 @@
                 response = await response.json()
                 response.forEach(post => {
                     if (this.recheepedPostIds.includes(post.id)) {
+                        post["interaction"] = "recheep"
                         this.recheepedPosts.push(post)
                     }
                 })
-            }
+            },
+            async getReplyPostIds() {
+                let response = await fetch("http://localhost:3333/api/reply", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                response.forEach(replyInstance => {
+                    this.replyPostIds.push(replyInstance.cheep_id)
+                })
+            },
+            async getReplyPosts() {
+                this.replyPostIds = []
+                this.replyPosts = []
+                await this.getReplyPostIds()
+                let response = await fetch("http://localhost:3333/api/cheep", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                const postsLength = response.length
+                
+                for (let i = 0; i < postsLength; i++) {
+                    if (this.replyPostIds.includes(response[i].id)) {
+                        const post = response[i]
+                        post["interaction"] = "reply"
+                        const interactionUsername = await this.getParentUsername(post.id)
+                        post["interactionUsername"] = interactionUsername
+                        this.replyPosts.push(post)
+                    }
+                }
+            },
+            async getParentId(id) {
+                const replyInfo = []
+                let response  = await fetch("http://localhost:3333/api/reply", {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                response = await response.json()
+                response.forEach(replyInstance => {
+                    replyInfo.push(replyInstance)
+                })
+
+                const replyInfoLength = replyInfo.length
+                let parentCheepId = null
+                for (let i = 0; i < replyInfoLength; i++) {
+                    if (replyInfo[i].cheep_id === id) {
+                        parentCheepId = replyInfo[i].reply_to
+                    }
+                }
+                return parentCheepId
+            },
+            async getParentUsername(id) {
+                const parentId = await this.getParentId(id)
+                let parentCheep = await fetch("http://localhost:3333/api/cheep/" + parentId, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Authorization': 'Bearer ' + this.$store.getters.token,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                parentCheep = await parentCheep.json()
+                return parentCheep[0].username
+            },
+            async getRecheepedAndReplyPosts() {
+                await this.getRecheepedPosts()
+                await this.getReplyPosts()
+                this.recheepedAndReplyPosts = this.recheepedPosts.concat(this.replyPosts)
+                this.recheepedAndReplyPosts.sort((a, b) => {
+                    return (a.created_at < b.created_at) ? -1 : ((a.created_at > b.created_at) ? 1 : 0)
+                })
+            },
         },
         created() {
             this.getUserPosts()

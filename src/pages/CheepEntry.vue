@@ -14,33 +14,37 @@
             </div>
         </section>
     </div>
-    <base-modal v-if="isSignUpModalDisplayed">
-        <div class="modal__main">
-            <div class="modal__logo"></div>
-            <form @submit.prevent="signUp" class="modal__signup">
-                <div class="modal__header">Create your account</div>
-                <input type="text" id="username" placeholder="User Name" v-model="username" required/>
-                <input type="text" id="handle" placeholder="@handle" v-model="handle" required/>
-                <input type="text" id="email" placeholder="Email" v-model="email" required/>
-                <input type="text" id="password" placeholder="Password" v-model="password" required/>
-                <textarea id="bio" placeholder="Profile Bio" v-model="bio" requireds></textarea>
-                <base-button type="submit" mode="primary">Create Account</base-button>
-            </form>
-        </div>
-        <div @click="updateSignUpModalDisplay" class="modal__close"></div>
-    </base-modal>
-    <base-modal v-if="isSignInModalDisplayed">
-        <div class="modal__main">
-            <div class="modal__logo"></div>
-            <form @submit.prevent="signIn" class="modal__signup">
-                <div class="modal__header">Sign in to Cheep</div>
-                <input type="text" id="email" placeholder="Email" v-model="email" required/>
-                <input type="text" id="password" placeholder="Password" v-model="password" required/>
-                <base-button type="submit" mode="primary">Sign In</base-button>
-            </form>
-        </div>
-        <div @click="updateSignInModalDisplay" class="modal__close"></div>
-    </base-modal>
+    <Teleport to="#app">
+        <base-modal v-if="isSignUpModalDisplayed" mode="modal__contentPrimary">
+            <div class="modal__main">
+                <div class="modal__logo"></div>
+                <form @submit.prevent="signUp" class="modal__signup">
+                    <div class="modal__header">Create your account</div>
+                    <input type="text" id="username" placeholder="User Name" v-model="username" required/>
+                    <input type="text" id="handle" placeholder="@handle" v-model="handle" required/>
+                    <input type="text" id="email" placeholder="Email" v-model="email" required/>
+                    <input type="text" id="password" placeholder="Password" v-model="password" required/>
+                    <textarea id="bio" placeholder="Profile Bio" v-model="bio" required></textarea>
+                    <base-button type="submit" mode="primary">Create Account</base-button>
+                </form>
+            </div>
+            <div @click="updateSignUpModalDisplay" class="modal__close"></div>
+        </base-modal>
+    </Teleport>
+    <Teleport to="#app">
+        <base-modal v-if="isSignInModalDisplayed" mode="modal__contentPrimary">
+            <div class="modal__main">
+                <div class="modal__logo"></div>
+                <form @submit.prevent="signIn" class="modal__signup">
+                    <div class="modal__header">Sign in to Cheep</div>
+                    <input type="text" id="email" placeholder="Email" v-model="email" required/>
+                    <input type="text" id="password" placeholder="Password" v-model="password" required/>
+                    <base-button type="submit" mode="primary">Sign In</base-button>
+                </form>
+            </div>
+            <div @click="updateSignInModalDisplay" class="modal__close"></div>
+        </base-modal>
+    </Teleport>
 </template>
 
 <script>
@@ -83,7 +87,7 @@
             },
             async signUp() {
                 await this.updateBio()
-                this.$store.dispatch('signup', {
+                await this.$store.dispatch('signup', {
                     email: this.email,
                     password: this.password,
                     username: this.username,
@@ -92,11 +96,7 @@
                     bio: this.uwuBio
 
                 })
-                this.$store.commit('setSignInStatus', {
-                    status: true
-                })
                 
-
                 this.username = ""
                 this.handle = ""
                 this.email = ""
@@ -113,26 +113,13 @@
                     email: this.email,
                     password: this.password
                 })
-                // this.$store.commit('setSignInStatus', {
-                //     status: true
-                // })
 
                 this.email = "",
                 this.password = ""
 
                 this.updateSignInModalDisplay()
-                // console.log('signin entry')
 
-                // localStorage.setItem('userid', this.$store.getters.userId)
-                // localStorage.setItem('token', this.$store.getters.token)
-                // localStorage.setItem('tokenExpiration', this.$store.getters.tokenExpiration)
-                // localStorage.setItem('isSignedIn', this.$store.getters.isSignedIn)
-                // localStorage.setItem('username', this.$store.getters.username)
-                // localStorage.setItem('handle', this.$store.getters.handle)
-                // localStorage.setItem('icon', this.$store.getters.icon)
-                // localStorage.setItem('bio', this.$store.getters.bio)
-
-                this.$router.replace('/home')
+                this.$router.push('/home')
             }
         }
     }

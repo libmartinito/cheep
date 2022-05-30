@@ -6,6 +6,12 @@
     </div>
 </template>
 
+<script>
+export default {
+    props: ["mode"]
+}
+</script>
+
 <style scoped>
     .modal {
         position: fixed;

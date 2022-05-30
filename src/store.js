@@ -56,7 +56,7 @@ const store = createStore({
                 context.commit('setSignInStatus', {
                     status: true,
                 })
-                // console.log('signin action')
+    
                 localStorage.setItem('userid', response.user_id)
                 localStorage.setItem('token', response.token)
                 localStorage.setItem('tokenExpiration', response.expires_at)
@@ -95,6 +95,18 @@ const store = createStore({
                     icon: response.icon,
                     bio: response.bio,
                 })
+                context.commit('setSignInStatus', {
+                    status: true,
+                })
+                
+                localStorage.setItem('userid', response.user_id)
+                localStorage.setItem('token', response.token)
+                localStorage.setItem('tokenExpiration', response.expires_at)
+                localStorage.setItem('isSignedIn', true)
+                localStorage.setItem('username', response.username)
+                localStorage.setItem('handle', response.handle)
+                localStorage.setItem('icon', response.icon)
+                localStorage.setItem('bio', response.bio)
             } catch(error) {
                 console.log(error)
             }

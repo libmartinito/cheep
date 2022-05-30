@@ -70,7 +70,7 @@
             },
             async postCheep() {
                 try {
-                    let response = await fetch("http://localhost:3333/api/cheep", {
+                    await fetch("http://localhost:3333/api/cheep", {
                         method: 'POST',
                         mode: 'cors',
                         headers: {
@@ -81,8 +81,8 @@
                             content: this.postContent
                         })
                     })
-                    response = await response.json()
-                    this.posts.concat(response)
+                    // response = await response.json()
+                    // this.posts.concat(response)
                 } catch(error) {
                     console.log(error)
                 }
