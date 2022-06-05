@@ -8,7 +8,10 @@
             <!-- <div class="profile__pic"></div> -->
             <img :src="icon" class="profile__pic"/>
             <base-button mode="edit" v-if="!this.handleProp">Edit Profile</base-button> 
-            <base-button mode="primary" v-else>Follow</base-button>   
+            <div class="profile__action-wrapper" v-else>
+                <base-button @click="followUser" mode="primary" v-if="!this.isProfileFollowed">Follow</base-button>   
+                <base-button @click="unfollowUser" mode="primary" v-else>Following</base-button> 
+            </div>        
         </div>
         <div class="profile__username">{{ username }}</div>
         <div class="profile__handle">{{ handle }}</div>
@@ -89,7 +92,9 @@
                 replyPostIds: [],
                 replyPosts: [],
                 replyInfo: [],
-                recheepedAndReplyPosts: []
+                recheepedAndReplyPosts: [],
+                isProfileFollowed: false,
+                userConnection: null
             }
         },
         methods: {
@@ -123,13 +128,11 @@
                     })
                     response = await response.json()
                     this.userInfo = response[0]
-                    console.log(response)
                 } catch(error) {
                     console.log(error)
                 }
             },
             async updateUserInfo() {
-                console.log(this.handleProp)
                 await this.getUserInfo()
                 if (!this.handleProp) {
                     this.username = this.$store.getters.username
@@ -162,7 +165,6 @@
                     })
                     response = await response.json()
                     this.userPosts = response
-                    console.log(response)
                 } catch(error) {
                     console.log(error)
                 }
@@ -378,12 +380,72 @@
                     console.log(error)
                 }                
             },
+            updateIsProfileFollowed() {
+                this.isProfileFollowed = !this.isProfileFollowed
+            },
+            async updateIfUserIsFollowed() {
+                try {
+                    await this.updateUserInfo()
+                    let response = await fetch("http://localhost:3333/api/connection", {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    response = await response.json()
+                    response.forEach(connection => {
+                        if (this.$store.getters.userId === connection.user_id && this.userId === connection.isfollowing_id) {
+                            this.updateIsProfileFollowed()
+                            this.userConnection = connection
+                        }
+                    })
+                } catch(error) {
+                    console.log(error)
+                }
+            },
+            async followUser() {
+                try {
+                    await fetch("http://localhost:3333/api/connection", {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: this.$store.getters.userId,
+                            isfollowing_id: parseInt(this.userId)
+                        })
+                    })
+                    this.isProfileFollowed = true
+                } catch(error) {
+                    console.log(error)
+                }
+            },
+            async unfollowUser() {
+                try {
+                    await fetch("http://localhost:3333/api/connection/" + this.userConnection.id, {
+                        method: 'DELETE',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    this.isProfileFollowed = false
+                } catch(error) {
+                    console.log(error)
+                }
+            },
             goBack() {
                 this.$router.go(-1)
             }
         },
         created() {
             this.updateUserInfo()
+            this.updateIfUserIsFollowed()
             this.getUserPosts()
             this.getLikedPosts()
         }

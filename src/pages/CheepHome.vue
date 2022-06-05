@@ -33,14 +33,34 @@
         data() {
             return {
                 posts: [],
-                postContent: ""
+                postContent: "",
+                followingIds: []
             }
         },
         methods: {
+            async getFollowingIds() {
+                try {
+                    let response = await fetch("http://localhost:3333/api/connection/", {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    response = await response.json()
+                    response.forEach(connection => {
+                        if (this.$store.getters.userId === connection.user_id) {
+                            this.followingIds.push(connection.isfollowing_id)
+                        }
+                    })
+                } catch(error) {
+                    console.log(error)
+                }
+            },
             async getPostsExceptForUser() {
                 try {
                     this.posts = []
-                    console.log(this.posts)
                     let response = await fetch("http://localhost:3333/api/cheep/all", {
                         method: 'GET',
                         mode: 'cors',
@@ -55,7 +75,10 @@
                     const currentUserId = parseInt(this.$store.getters.userId)
                     
                     this.posts = allPosts.filter(post => post.user_id !== currentUserId)
-                    console.log(this.posts)
+
+                    await this.getFollowingIds()
+
+                    this.posts = this.posts.filter(post => this.followingIds.includes(post.id))
                 } catch(error) {
                     console.log(error)
                 }
