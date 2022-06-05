@@ -3,7 +3,8 @@
         <div>Home</div>
     </header>
     <section class="input">
-        <div class="input__icon"></div>
+        <!-- <div class="input__icon"></div> -->
+        <img class="input__icon" :src="this.$store.getters.icon"/>
         <div class="input__main">
             <textarea id="input__text" placeholder="What's happening?" v-model="postContent"></textarea>
             <div class="input__actions">
@@ -85,10 +86,10 @@
 </script>
 <style scoped>
 .header {
-    padding: 0.5rem;
+    padding: 0.5rem 0rem; 
 }
 .input__icon {
-    background-image: url("../assets/icon.svg");
+    /* background-image: url("../assets/icon.svg"); */
     background-size: contain;
     width: 3rem;
     height: 3rem;

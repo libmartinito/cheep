@@ -1,12 +1,14 @@
 <template>
-    <header>
-        User
+    <header class="header">
+        <div @click="goBack" class="header__back" v-if="this.handleProp"></div>
+        <div class="header__title">{{ username }}</div>
     </header>
     <section class="profile">
         <div class="profile__wrapper">
             <!-- <div class="profile__pic"></div> -->
             <img :src="icon" class="profile__pic"/>
-            <base-button mode="edit">Edit Profile</base-button>    
+            <base-button mode="edit" v-if="!this.handleProp">Edit Profile</base-button> 
+            <base-button mode="primary" v-else>Follow</base-button>   
         </div>
         <div class="profile__username">{{ username }}</div>
         <div class="profile__handle">{{ handle }}</div>
@@ -44,6 +46,8 @@
             :icon="post.icon"
             :interaction = "post.interaction"
             :interactionUsername = "post.interactionUsername"
+            :handleProp = "this.handleProp"
+            :userInfo = "this.userInfo"
         ></cheep-post>
     </div>
     <div v-if="likesIsActive">
@@ -88,32 +92,6 @@
                 recheepedAndReplyPosts: []
             }
         },
-        // computed: {
-        //     username() {
-        //         if (this.handleProp !== this.$store.getters.handle) {
-        //             return this.$store.getters.username
-        //         }
-        //         return this.userInfo.username
-        //     },
-        //     handle() {
-        //         if (!this.handleProp) {
-        //             return this.$store.getters.handle
-        //         }
-        //         return this.userInfo.handle
-        //     },
-        //     icon() {
-        //         if (!this.handleProp) {
-        //             return this.$store.getters.icon
-        //         }
-        //         return this.userInfo.icon
-        //     },
-        //     bio() {
-        //         if (!this.handleProp) {
-        //             return this.$store.getters.bio
-        //         }
-        //         return this.userInfo.bio
-        //     }
-        // },
         methods: {
             async updateSelected(selected) {
                 this.selected = selected
@@ -400,6 +378,9 @@
                     console.log(error)
                 }                
             },
+            goBack() {
+                this.$router.go(-1)
+            }
         },
         created() {
             this.updateUserInfo()
@@ -410,6 +391,19 @@
 </script>
 
 <style scoped>
+.header {
+    display: flex;
+    gap: 0.8rem;
+    padding: 0.5rem 0rem;
+    align-items: center;
+}
+.header__back {
+    background-image: url("../assets/back.svg");
+    background-size: cover;
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+}
 .profile__wrapper {
     display: flex;
     justify-content: space-between;

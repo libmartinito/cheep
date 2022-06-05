@@ -68,7 +68,7 @@
 
 <script>
     export default {
-        props: ["cheepId", "icon", "username", "handle", "content", "interaction", "interactionUsername"],
+        props: ["cheepId", "icon", "username", "handle", "content", "interaction", "interactionUsername", "handleProp", "userInfo"],
         data() {
             return {
                 isReactActive: false,
@@ -87,14 +87,17 @@
         computed: {
             cheepInteraction() {
                 if (this.interaction === "recheep") {
-                    if (this.handle !== this.$store.getters.handle) {
+                    if (!this.handleProp) {
                         return "You recheeped this"
                     } else {
-                        return `${this.$store.getters.username} recheeped this`
+                        return `${this.userInfo.username} recheeped this`
                     }                    
                 } else if (this.interaction === "reply") {
-                    if (this.handle !== this)
-                    return `You replied to ${this.interactionUsername}`
+                    if (!this.handleProp) {
+                        return `You replied to ${this.interactionUsername}`
+                    } else {
+                        return `${this.userInfo.username} replied to ${this.interactionUsername}`
+                    }
                 }
                 return null
             }

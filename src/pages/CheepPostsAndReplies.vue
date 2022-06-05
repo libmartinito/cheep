@@ -115,6 +115,12 @@
 </script>
 
 <style scoped>
+.header {
+    display: flex;
+    gap: 0.8rem;
+    padding: 0.5rem 0rem;
+    align-items: center;
+}
 .header__back {
     background-image: url("../assets/back.svg");
     background-size: cover;
