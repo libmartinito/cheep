@@ -3,7 +3,9 @@
   <div class="feed-wrapper">
     <the-sidebar v-if="isSignedIn"></the-sidebar>
     <section :class="{feed: isSignedIn}">
-      <router-view></router-view>
+      <router-view v-slot="{Component, route}">
+        <component :is="Component" :key="route.path"/>
+      </router-view>
     </section>
   </div>
 </template>

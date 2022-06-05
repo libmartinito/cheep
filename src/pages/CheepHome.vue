@@ -36,11 +36,11 @@
             }
         },
         methods: {
-            async getData() {
+            async getPostsExceptForUser() {
                 try {
                     this.posts = []
                     console.log(this.posts)
-                    let response = await fetch("http://localhost:3333/api/cheep", {
+                    let response = await fetch("http://localhost:3333/api/cheep/all", {
                         method: 'GET',
                         mode: 'cors',
                         headers: {
@@ -50,19 +50,10 @@
                     })
                     const allPosts = await response.json()
                     console.log(allPosts)
-                    // console.log(this.$store.getters.userId)
-                    // this.posts = []
+
                     const currentUserId = parseInt(this.$store.getters.userId)
                     
                     this.posts = allPosts.filter(post => post.user_id !== currentUserId)
-                    // allPosts.forEach(post => {
-                    //     if (post.user_id === this.$store.getters.userId) {
-                    //         // console.log('post not pushed')
-                    //         return
-                    //         // this.posts.push(post)
-                    //     }
-                    //     this.posts.push(post)
-                    // })
                     console.log(this.posts)
                 } catch(error) {
                     console.log(error)
@@ -78,18 +69,17 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
+                            user_id: this.$store.getters.userId,
                             content: this.postContent
                         })
                     })
-                    // response = await response.json()
-                    // this.posts.concat(response)
                 } catch(error) {
                     console.log(error)
                 }
             }
         },
         created() {
-            this.getData()
+            this.getPostsExceptForUser()
         },
     }
 </script>

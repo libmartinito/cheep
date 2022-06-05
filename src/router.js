@@ -6,6 +6,8 @@ import CheepExplore from './pages/CheepExplore.vue'
 import CheepNotifications from './pages/CheepNotifications.vue'
 import CheepMessages from './pages/CheepMessages.vue'
 import CheepProfile from './pages/CheepProfile.vue'
+import CheepPostsAndReplies from './pages/CheepPostsAndReplies.vue'
+// import CheepOtherProfile from './pages/CheepOtherProfile.vue'
 
 // import store from './store'
 
@@ -16,6 +18,8 @@ const routes = [
     { path: '/notifications', name: 'notifications', component: CheepNotifications },
     { path: '/messages', name: 'messages', component: CheepMessages },
     { path: '/profile', name: 'profile', component: CheepProfile },
+    { path: '/cheep/:id', component: CheepPostsAndReplies, props: true },
+    { path: '/user/:handleProp', component: CheepProfile, props: true }
 ]
 
 const router = createRouter({

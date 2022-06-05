@@ -64,17 +64,20 @@
         components: {
             CheepPost
         },
+        props: ['handleProp'],
         data() {
             return {
                 selected: "",
                 cheepsIsActive: false,
                 repliesIsActive: false,
                 likesIsActive: false,
+                userId: null,
+                userInfo: {},
                 userPosts: [],
-                username: this.$store.getters.username,
-                handle: this.$store.getters.handle,
-                icon: this.$store.getters.icon,
-                bio: this.$store.getters.bio,
+                username: null,
+                handle: null,
+                icon: null,
+                bio: null,
                 likedPostIds: [],
                 likedPosts: [],
                 recheepedPostIds: [],
@@ -85,6 +88,32 @@
                 recheepedAndReplyPosts: []
             }
         },
+        // computed: {
+        //     username() {
+        //         if (this.handleProp !== this.$store.getters.handle) {
+        //             return this.$store.getters.username
+        //         }
+        //         return this.userInfo.username
+        //     },
+        //     handle() {
+        //         if (!this.handleProp) {
+        //             return this.$store.getters.handle
+        //         }
+        //         return this.userInfo.handle
+        //     },
+        //     icon() {
+        //         if (!this.handleProp) {
+        //             return this.$store.getters.icon
+        //         }
+        //         return this.userInfo.icon
+        //     },
+        //     bio() {
+        //         if (!this.handleProp) {
+        //             return this.$store.getters.bio
+        //         }
+        //         return this.userInfo.bio
+        //     }
+        // },
         methods: {
             async updateSelected(selected) {
                 this.selected = selected
@@ -104,9 +133,47 @@
                 await this.getLikedPosts()
                 await this.getRecheepedAndReplyPosts()
             },
-            async getUserPosts() {
+            async getUserInfo() {
                 try {
-                    const url = "http://localhost:3333/api/cheep/all/" + this.$store.getters.userId
+                    let response = await fetch("http://localhost:3333/api/user/" + this.handleProp, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: { 
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    response = await response.json()
+                    this.userInfo = response[0]
+                    console.log(response)
+                } catch(error) {
+                    console.log(error)
+                }
+            },
+            async updateUserInfo() {
+                console.log(this.handleProp)
+                await this.getUserInfo()
+                if (!this.handleProp) {
+                    this.username = this.$store.getters.username
+                    this.handle = this.$store.getters.handle
+                    this.icon = this.$store.getters.icon
+                    this.bio = this.$store.getters.bio
+                } else {
+                    this.username = this.userInfo.username
+                    this.handle = this.userInfo.handle
+                    this.icon = this.userInfo.icon
+                    this.bio = this.userInfo.bio
+                    this.userId = this.userInfo.id
+                }
+            },
+            async getUserPosts() {                
+                try {
+                    let url = ""
+                    if (!this.handleProp) {
+                        url = "http://localhost:3333/api/cheep/all/" + this.$store.getters.userId
+                    } else {
+                        url = "http://localhost:3333/api/cheep/all/" + this.userId
+                    }
                     let response = await fetch(url, {
                         method: 'GET',
                         mode: 'cors',
@@ -117,163 +184,225 @@
                     })
                     response = await response.json()
                     this.userPosts = response
+                    console.log(response)
                 } catch(error) {
                     console.log(error)
                 }
             },
             async getLikedPostIds(){
-                let response = await fetch("http://localhost:3333/api/like", {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.$store.getters.token,
-                        'Content-Type': 'application/json'
+                try {
+                    let url = ""
+                    if (!this.handleProp) {
+                        url = "http://localhost:3333/api/like/all/" + this.$store.getters.userId
+                    } else {
+                        url = "http://localhost:3333/api/like/all/" + this.userId
                     }
-                })
-                response = await response.json()
-                response.forEach(likeInstance => {
-                    this.likedPostIds.push(likeInstance.cheep_id)
-                })
+                    let response = await fetch(url, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    response = await response.json()
+                    response.forEach(likeInstance => {
+                        this.likedPostIds.push(likeInstance.cheep_id)
+                    })
+                } catch(error) {
+                    console.log(error)
+                }
+                
             },
             async getLikedPosts() {
-                this.likedPostIds = []
-                this.likedPosts = [] 
-                await this.getLikedPostIds()               
-                let response = await fetch("http://localhost:3333/api/cheep/", {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.$store.getters.token,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                response = await response.json()
-                response.forEach(post => {
-                    if (this.likedPostIds.includes(post.id)) {
-                        this.likedPosts.push(post)
-                    }
-                })
+                try {
+                    this.likedPostIds = []
+                    this.likedPosts = [] 
+                    await this.getLikedPostIds()               
+                    let response = await fetch("http://localhost:3333/api/cheep/all", {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    response = await response.json()
+                    response.forEach(post => {
+                        if (this.likedPostIds.includes(post.id)) {
+                            this.likedPosts.push(post)
+                        }
+                    })
+                } catch(error) {
+                    console.log(error)
+                }
+                
             },
             async getRecheepedPostIds() {
-                let response = await fetch("http://localhost:3333/api/recheep", {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.$store.getters.token,
-                        'Content-Type': 'application/json'
+                try {
+                    let url = ""
+                    if (!this.handleProp) {
+                        url = "http://localhost:3333/api/recheep/all/" + this.$store.getters.userId
+                    } else {
+                        url = "http://localhost:3333/api/recheep/all/" + this.userId
                     }
-                })
-                response = await response.json()
-                response.forEach(recheepInstance => {
-                    this.recheepedPostIds.push(recheepInstance.cheep_id)
-                })
+                    let response = await fetch(url, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    response = await response.json()
+                    response.forEach(recheepInstance => {
+                        this.recheepedPostIds.push(recheepInstance.cheep_id)
+                    })
+                }catch(error) {
+                    console.log(error)
+                }                
             },
             async getRecheepedPosts() {
-                this.recheepedPostIds = []
-                this.recheepedPosts = []
-                await this.getRecheepedPostIds()
-                let response = await fetch("http://localhost:3333/api/cheep", {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.$store.getters.token,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                response = await response.json()
-                response.forEach(post => {
-                    if (this.recheepedPostIds.includes(post.id)) {
-                        post["interaction"] = "recheep"
-                        this.recheepedPosts.push(post)
-                    }
-                })
+                try {
+                    this.recheepedPostIds = []
+                    this.recheepedPosts = []
+                    await this.getRecheepedPostIds()
+                    let response = await fetch("http://localhost:3333/api/cheep/all", {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    response = await response.json()
+                    response.forEach(post => {
+                        if (this.recheepedPostIds.includes(post.id)) {
+                            post["interaction"] = "recheep"
+                            this.recheepedPosts.push(post)
+                        }
+                    })
+                } catch(error) {
+                    console.log(error)
+                }                
             },
             async getReplyPostIds() {
-                let response = await fetch("http://localhost:3333/api/reply", {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.$store.getters.token,
-                        'Content-Type': 'application/json'
+                try {
+                    let url = ""
+                    if (!this.handleProp) {
+                        url = "http://localhost:3333/api/reply/all/" + this.$store.getters.userId
+                    } else {
+                        url = "http://localhost:3333/api/reply/all/" + this.userId
                     }
-                })
-                response = await response.json()
-                response.forEach(replyInstance => {
-                    this.replyPostIds.push(replyInstance.cheep_id)
-                })
+                    let response = await fetch(url, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    response = await response.json()
+                    response.forEach(replyInstance => {
+                        this.replyPostIds.push(replyInstance.cheep_id)
+                    })
+                } catch(error) {
+                    console.log(error)
+                }
+                
             },
             async getReplyPosts() {
-                this.replyPostIds = []
-                this.replyPosts = []
-                await this.getReplyPostIds()
-                let response = await fetch("http://localhost:3333/api/cheep", {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.$store.getters.token,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                response = await response.json()
-                const postsLength = response.length
+                try {
+                    this.replyPostIds = []
+                    this.replyPosts = []
+                    await this.getReplyPostIds()
+                    let response = await fetch("http://localhost:3333/api/cheep/all", {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    response = await response.json()
+                    const postsLength = response.length
                 
-                for (let i = 0; i < postsLength; i++) {
-                    if (this.replyPostIds.includes(response[i].id)) {
-                        const post = response[i]
-                        post["interaction"] = "reply"
-                        const interactionUsername = await this.getParentUsername(post.id)
-                        post["interactionUsername"] = interactionUsername
-                        this.replyPosts.push(post)
+                    for (let i = 0; i < postsLength; i++) {
+                        if (this.replyPostIds.includes(response[i].id)) {
+                            const post = response[i]
+                            post["interaction"] = "reply"
+                            const interactionUsername = await this.getParentUsername(post.id)
+                            post["interactionUsername"] = interactionUsername
+                            this.replyPosts.push(post)
+                        }
                     }
+                } catch(error) {
+                    console.log(error)
                 }
+                
             },
             async getParentId(id) {
-                const replyInfo = []
-                let response  = await fetch("http://localhost:3333/api/reply", {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.$store.getters.token,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                response = await response.json()
-                response.forEach(replyInstance => {
-                    replyInfo.push(replyInstance)
-                })
+                try {
+                    const replyInfo = []
+                    let response  = await fetch("http://localhost:3333/api/reply/all", {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    response = await response.json()
+                    response.forEach(replyInstance => {
+                        replyInfo.push(replyInstance)
+                    })
 
-                const replyInfoLength = replyInfo.length
-                let parentCheepId = null
-                for (let i = 0; i < replyInfoLength; i++) {
-                    if (replyInfo[i].cheep_id === id) {
-                        parentCheepId = replyInfo[i].reply_to
+                    const replyInfoLength = replyInfo.length
+                    let parentCheepId = null
+                    for (let i = 0; i < replyInfoLength; i++) {
+                        if (replyInfo[i].cheep_id === id) {
+                            parentCheepId = replyInfo[i].reply_to
+                        }
                     }
+                    return parentCheepId
+                } catch(error) {
+                    console.log(error)
                 }
-                return parentCheepId
+                
             },
             async getParentUsername(id) {
-                const parentId = await this.getParentId(id)
-                let parentCheep = await fetch("http://localhost:3333/api/cheep/" + parentId, {
-                    method: 'GET',
-                    mode: 'cors',
-                    headers: {
-                        'Authorization': 'Bearer ' + this.$store.getters.token,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                parentCheep = await parentCheep.json()
-                return parentCheep[0].username
+                try {
+                    const parentId = await this.getParentId(id)
+                    let parentCheep = await fetch("http://localhost:3333/api/cheep/" + parentId, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Authorization': 'Bearer ' + this.$store.getters.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    parentCheep = await parentCheep.json()
+                    return parentCheep[0].username
+                } catch(error) {
+                    console.log(error)
+                }
+                
             },
             async getRecheepedAndReplyPosts() {
-                await this.getRecheepedPosts()
-                await this.getReplyPosts()
-                this.recheepedAndReplyPosts = this.recheepedPosts.concat(this.replyPosts)
-                this.recheepedAndReplyPosts.sort((a, b) => {
-                    return (a.created_at < b.created_at) ? -1 : ((a.created_at > b.created_at) ? 1 : 0)
-                })
+                try {
+                    await this.getRecheepedPosts()
+                    await this.getReplyPosts()
+                    this.recheepedAndReplyPosts = this.recheepedPosts.concat(this.replyPosts)
+                    this.recheepedAndReplyPosts.sort((a, b) => {
+                        return (a.created_at < b.created_at) ? -1 : ((a.created_at > b.created_at) ? 1 : 0)
+                    })
+                } catch(error) {
+                    console.log(error)
+                }                
             },
         },
         created() {
+            this.updateUserInfo()
             this.getUserPosts()
             this.getLikedPosts()
         }

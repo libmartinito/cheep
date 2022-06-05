@@ -1,5 +1,5 @@
 <template>
-    <section :class="[{hidden: isHidden}, 'post']">        
+    <section @click="goToPost" :class="[{hidden: isHidden}, 'post']">        
         <div class="post__interaction">{{ cheepInteraction }}</div>
         <div class="post__main">
             <!-- <div class="post__icon"></div> -->
@@ -7,26 +7,26 @@
             <div class="post__content">
                 <div class="post__header">
                     <div class="post__userinfo">
-                        <div class="post__username">{{ username }}</div>
+                        <div @click.stop="goToProfile" class="post__username">{{ username }}</div>
                         <div class="post__handle">{{ handle }}</div>
                         <div class="post__age">10h</div>
                     </div>
-                    <div @click="updateIsOptionsClicked" class="post__options" v-if="!isOptionsClicked">&#183;&#183;&#183;</div>
-                    <div @click="deleteCheep" class="post__options-action" v-else>Delete</div>
+                    <div @click.stop="updateIsOptionsClicked" class="post__options" v-if="!isOptionsClicked">&#183;&#183;&#183;</div>
+                    <div @click.stop="deleteCheep" class="post__options-action" v-else>Delete</div>
                 </div>
                 <div class="post__body">
                     {{ content }}
                 </div>
                 <div class="post__actions">
-                    <div @click="updateIsReplyClicked" class="post__reply">
+                    <div @click.stop="updateIsReplyClicked" class="post__reply">
                         <div class="post__reply-icon"></div>
                         <div class="post__reply-counter">{{ replyCount }}</div>
                     </div>
-                    <div @click="recheep" :class="[{post__actionsActive: isRecheepActive}, 'post__recheep']">
+                    <div @click.stop="recheep" :class="[{post__actionsActive: isRecheepActive}, 'post__recheep']">
                         <div class="post__recheep-icon"></div>
                         <div class="post__recheep-counter">{{ recheepCount }}</div>
                     </div>
-                    <div @click="like" :class="[{post__actionsActive: isReactActive}, 'post__react']">
+                    <div @click.stop="like" :class="[{post__actionsActive: isReactActive}, 'post__react']">
                         <div class="post__react-icon"></div>
                         <div class="post__react-counter">{{ likeCount }}</div>
                     </div>
@@ -93,6 +93,7 @@
                         return `${this.$store.getters.username} recheeped this`
                     }                    
                 } else if (this.interaction === "reply") {
+                    if (this.handle !== this)
                     return `You replied to ${this.interactionUsername}`
                 }
                 return null
@@ -113,6 +114,16 @@
             },
             updateIsHidden() {
                 this.isHidden = !this.isHidden
+            },
+            goToPost() {                
+                this.$router.push("/cheep/" + this.cheepId)
+            },
+            goToProfile() {
+                const authenticatedHandle = this.$store.getters.handle
+                if (this.handle === authenticatedHandle) {
+                    return
+                }
+                this.$router.push("/user/" + this.handle)
             },
             async like() {
                 if (!this.isReactActive) {
@@ -200,6 +211,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
+                            user_id: this.$store.getters.userId,
                             content: this.replyContent
                         })
                     })
@@ -227,7 +239,7 @@
                 this.updateReplyCount()
             },
             async updateIfPostIsLiked() {
-                let response = await fetch("http://localhost:3333/api/like", {
+                let response = await fetch("http://localhost:3333/api/like/all/", {
                     method: 'GET',
                     mode: 'cors',
                     headers: {
@@ -244,7 +256,7 @@
                 })
             },
             async updateLikeCount() {
-                let response = await fetch("http://localhost:3333/api/like/" + this.cheepId, {
+                let response = await fetch("http://localhost:3333/api/like/count/" + this.cheepId, {
                     method: 'GET',
                     mode: 'cors',
                     headers: {
@@ -256,7 +268,7 @@
                 this.likeCount = response[0].total            
             },
             async updateIfPostIsRecheeped() {
-                let response = await fetch("http://localhost:3333/api/recheep", {
+                let response = await fetch("http://localhost:3333/api/recheep/all", {
                     method: 'GET',
                     mode: 'cors',
                     headers: {
@@ -273,7 +285,7 @@
                 })
             },
             async updateRecheepCount() {
-                let response = await fetch("http://localhost:3333/api/recheep/" + this.cheepId, {
+                let response = await fetch("http://localhost:3333/api/recheep/count/" + this.cheepId, {
                     method: 'GET',
                     mode: 'cors',
                     headers: {
@@ -285,7 +297,7 @@
                 this.recheepCount = response[0].total
             },
             async updateReplyCount() {
-                let response = await fetch("http://localhost:3333/api/reply/" + this.cheepId, {
+                let response = await fetch("http://localhost:3333/api/reply/count/" + this.cheepId, {
                     method: 'GET',
                     mode: 'cors',
                     headers: {
@@ -323,8 +335,7 @@
             this.updateLikeCount()
             this.updateIfPostIsRecheeped()
             this.updateRecheepCount()
-            this.updateReplyCount()
-            
+            this.updateReplyCount()            
         }
     }
 </script>
